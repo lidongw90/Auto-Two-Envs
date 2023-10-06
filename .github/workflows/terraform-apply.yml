@@ -1,0 +1,80 @@
+name: "Terraform Apply"
+
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  PROD_TF_WORKSPACE: "terraform-prod"
+  PROD_CONFIG_DIRECTORY: "./"
+  DEV_TF_WORKSPACE: "terraform-dev"
+  DEV_CONFIG_DIRECTORY: "./"
+
+jobs:
+  terraform-prod:
+    env:
+      TF_CLOUD_ORGANIZATION: "linvest21-Terraform-Automation-prod"
+      TF_API_TOKEN: "${{ secrets.TF_TOKEN }}"
+    name: "Terraform Apply - prod"
+    if: github.ref_name == 'prod'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
+        id: apply-upload
+        with:
+          workspace: ${{ env.PROD_TF_WORKSPACE }}
+          directory: ${{ env.PROD_CONFIG_DIRECTORY }}
+
+      - name: Create Apply Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
+        id: apply-run
+        with:
+          workspace: ${{ env.PROD_TF_WORKSPACE }}
+          configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
+
+      - name: Apply
+        uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
+        if: fromJSON(steps.apply-run.outputs.payload).data.attributes.actions.IsConfirmable
+        id: apply
+        with:
+          run: ${{ steps.apply-run.outputs.run_id }}
+          comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
+  terraform-dev:
+    env:
+      TF_CLOUD_ORGANIZATION: "linvest21-Terraform-Automation-dev"
+      TF_API_TOKEN: "${{ secrets.TF_TOKEN }}"
+    name: "Terraform Apply - dev"
+    if: github.ref_name == 'dev'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
+        id: apply-upload
+        with:
+          workspace: ${{ env.DEV_TF_WORKSPACE }}
+          directory: ${{ env.DEV_CONFIG_DIRECTORY }}
+
+      - name: Create Apply Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
+        id: apply-run
+        with:
+          workspace: ${{ env.DEV_TF_WORKSPACE }}
+          configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
+
+      - name: Apply
+        uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
+        if: fromJSON(steps.apply-run.outputs.payload).data.attributes.actions.IsConfirmable
+        id: apply
+        with:
+          run: ${{ steps.apply-run.outputs.run_id }}
+          comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
