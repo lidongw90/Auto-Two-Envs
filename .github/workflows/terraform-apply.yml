@@ -3,7 +3,7 @@ name: "Terraform Apply"
 on:
   push:
     branches:
-      - prod
+      - dev
 
 env:
   PROD_TF_WORKSPACE: "terraform-prod"
