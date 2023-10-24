@@ -6,18 +6,18 @@ on:
       - dev
 
 env:
-  PROD_TF_WORKSPACE: "terraform-prod"
-  PROD_CONFIG_DIRECTORY: "./"
+  TEST_TF_WORKSPACE: "terraform-test"
+  TEST_CONFIG_DIRECTORY: "./"
   DEV_TF_WORKSPACE: "terraform-dev"
   DEV_CONFIG_DIRECTORY: "./"
 
 jobs:
-  terraform-prod:
+  terraform-test:
     env:
-      TF_CLOUD_ORGANIZATION: "linvest21-Terraform-Automation-prod"
+      TF_CLOUD_ORGANIZATION: "linvest21-Terraform-Automation-test"
       TF_API_TOKEN: "${{ secrets.TF_TOKEN }}"
-    name: "Terraform Apply - prod"
-    if: github.ref_name == 'prod'
+    name: "Terraform Apply - test"
+    if: github.ref_name == 'test'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,14 +28,14 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
         id: apply-upload
         with:
-          workspace: ${{ env.PROD_TF_WORKSPACE }}
-          directory: ${{ env.PROD_CONFIG_DIRECTORY }}
+          workspace: ${{ env.TEST_TF_WORKSPACE }}
+          directory: ${{ env.TEST_CONFIG_DIRECTORY }}
 
       - name: Create Apply Run
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
         id: apply-run
         with:
-          workspace: ${{ env.PROD_TF_WORKSPACE }}
+          workspace: ${{ env.TEST_TF_WORKSPACE }}
           configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
 
       - name: Apply
