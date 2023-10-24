@@ -3,7 +3,7 @@ name: "Terraform Apply"
 on:
   push:
     branches:
-      - dev
+      - test
 
 env:
   TEST_TF_WORKSPACE: "terraform-test"
